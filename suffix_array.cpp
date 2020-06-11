@@ -1,99 +1,54 @@
-#include <cstdio>
-#include <iostream>
-#include <cstring>
-#include <algorithm>
-using namespace std;
-const int M=128;
-const int N=100300;
-int n,m,tot[M+15];
-char str[N];
-int sa[N],rnk[N],c[N][2],tmp[N];
-void init()
+char s[N];
+int n,Rnk[N<<1],cnt[N],P[N],Q[N],sa[N],height[N];
+void get_sa()
 {
-    scanf("%s",str);
-    n=strlen(str);
-    for (int i=n;i>=1;--i) str[i]=str[i-1];  
-    str[0]=' ';
+    for (int i=0;i<=200;++i) cnt[i]=0;
+    for (int i=1;i<=n;++i) cnt[s[i]]=1;
+    for (int i=1;i<=200;++i) cnt[i]+=cnt[i-1];
+    for (int i=1;i<=n;++i) Rnk[i]=cnt[s[i]];
+    for (int now=1;now<n;now<<=1)
+    {
+        for (int i=0;i<=n;++i) cnt[i]=0;
+        cnt[0]=now;
+        for (int i=now+1;i<=n;++i) ++cnt[Rnk[i]];
+        for (int i=1;i<=n;++i) cnt[i]+=cnt[i-1];
+        for (int i=n;i>=1;--i)
+        {
+            int tmp=Rnk[i+now];
+            P[cnt[tmp]]=i; --cnt[tmp];
+        } 
+        for (int i=0;i<=n;++i) cnt[i]=0;
+        for (int i=1;i<=n;++i) ++cnt[Rnk[P[i]]];
+        for (int i=1;i<=n;++i) cnt[i]+=cnt[i-1];
+        for (int i=n;i>=1;--i)
+        {
+            Q[cnt[Rnk[P[i]]]]=P[i];
+            --cnt[Rnk[P[i]]];
+        }
+        int tmp=0;
+        for (int i=1;i<=n;++i)
+        {
+            if (Rnk[Q[i]]!=Rnk[Q[i-1]]||Rnk[Q[i]+now]!=Rnk[Q[i-1]+now]) ++tmp;
+            P[i]=tmp;
+        }
+        for (int i=1;i<=n;++i) Rnk[Q[i]]=P[i];
+        if (tmp==n) break;
+    }
+    for (int i=1;i<=n;++i) sa[Rnk[i]]=i;
+    for (int i=1;i<=n;++i) printf("%d%c",sa[i]," \n"[i==n]);
 }
 
-void get_SA(char *str)
+//height[i] -> the length of LCP of SA[i-1] and SA[i]
+//h[i]=height[Rnk[i]]   h[i]>=h[i-1]-1
+//LCP(suffix i,suffix j)=RMQ(height,rnk[i]+1,rnk[j]);
+void get_height()
 {
-    memset(tot,0,sizeof(tot));
-    for (int i=1;i<=n;++i) ++tot[str[i]];
-    for (int i=1;i<=M;++i) tot[i]+=tot[i-1];
-    for (int i=n;i>=1;--i)
-    {
-        sa[tot[str[i]]]=i;
-        --tot[str[i]];
-    } 
+    int tmp=0;
     for (int i=1;i<=n;++i)
     {
-        rnk[sa[i]]=rnk[sa[i-1]];
-        if (str[sa[i]]!=str[sa[i-1]]) ++rnk[sa[i]];
+        if (tmp) --tmp;
+        int j=sa[Rnk[i]-1];
+        while (s[j+tmp]==s[i+tmp]) ++tmp;
+        height[Rnk[i]]=tmp;
     }
-    for (int len=1;len<=n;len<<=1)
-    {
-        memset(tot,0,sizeof(tot));
-        for (int i=1;i<=n;++i)
-        {
-            c[i][0]=rnk[i],c[i][1]=rnk[i+len];
-        }
-        for (int i=1;i<=n;++i)
-        {
-            ++tot[c[i][1]];
-        }
-        for (int i=1;i<=M;++i) tot[i]+=tot[i-1];
-        for (int i=n;i>=1;--i)
-        {
-            sa[tot[c[i][1]]]=i;
-            --tot[c[i][1]];
-        }
-        for (int i=1;i<=n;++i)
-        {
-            rnk[sa[i]]=i;
-        }
-        memset(tot,0,sizeof(tot));
-        for (int i=1;i<=n;++i)
-        {
-            ++tot[c[i][0]];
-        }
-        for (int i=1;i<=M;++i) tot[i]+=tot[i-1];
-        for (int i=n;i>=1;--i)
-        {
-            tmp[tot[c[sa[i]][0]]]=sa[i];
-            --tot[c[sa[i]][0]];
-        }
-        int flag=0;
-        for (int i=1;i<=n;++i) sa[i]=tmp[i];
-        for (int i=1;i<=n;++i)
-        {
-            rnk[sa[i]]=rnk[sa[i-1]];
-            if (c[sa[i]][0]!=c[sa[i-1]][0]||c[sa[i]][1]!=c[sa[i-1]][1]) 
-            {
-                ++rnk[sa[i]];
-                flag=1;
-            }
-        }
-        if (!flag) break;
-    }
-    for (int i=1;i<=n;++i) cout<<rnk[i]<<" ";cout<<endl;
-    for (int i=1;i<=n;++i) cout<<sa[i]<<" ";cout<<endl;
-}
-
-void get_height(char *str)
-{
-    
-}
-
-void solve()
-{
-    get_SA(str);
-    get_height(str);
-}
-
-int main()
-{
-    init();
-    solve();
-    return 0;
 }
