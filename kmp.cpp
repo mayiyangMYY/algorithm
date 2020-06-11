@@ -1,35 +1,29 @@
-void getnext(char *a)
+void get_common_suffix_prefix(char *p)
 {
-	int i=0,j=-1,l=strlen(a);
-	nxt[0]=-1;
-	while (i<l)
-	{
-		if (j==-1||a[i]==a[j])
-		{
-			++i,++j;
-			nxt[i]=j;
-		}
-		else
-		{
-			j=nxt[j];
-		}
-	}
+    int i=1,j=0;
+    int len=strlen(p);
+    for (;i<len;++i)
+    {
+        while (j&&p[i]!=p[j]) j=csp[j-1];
+        if (p[i]==p[j]) ++j,csp[i]=j;
+        else csp[i]=0;   
+    }
 }
 
-void KMP(char *a,char *b)
+//csp -> common_suffix_prefix
+void kmp(char *s,char *t)
 {
-	int i=0,j=0,A=strlen(a),B=strlen(b);
-	while (i<A)
-	{
-		if (j==-1||a[i]==b[j])
-		{
-			++i,++j;
-		}
-		else j=nxt[j];
-		if (j==B)
-		{
-			printf("%d\n",i-B+1);
-			j=nxt[j];
-		}
-	}
+    int i=0,j=0;
+    int S=strlen(s),T=strlen(t);
+    for (;i<S;++i)
+    {
+        while (j&&s[i]!=t[j]) j=csp[j-1];
+        if (s[i]==t[j]) ++j;
+        if (j>=T)
+        {
+            int ans=i-j+1;
+            printf("%d\n",ans);
+            j=csp[j-1];
+        }
+    }
 }
